@@ -67,7 +67,7 @@ int main() {
 
             sscanf(token, "%d", &src);
 
-            grafo_insert_vertex(g, str_src, src);
+            grafo_insert_vertex(g, str_src, -1);
 
             token = strtok(NULL, " ");
             token = strtok(NULL, " ");
