@@ -2,13 +2,13 @@
 
 typedef struct vertex {
   char id[100];
-  int  data;
+  void *data;
 }* StVertex;
 
 typedef struct edge {
   char from[100];
   char to[100];
-  int  data;
+  void *data;
 }* StEdge;
 
 typedef struct grafo {
@@ -27,20 +27,20 @@ Grafo new_grafo() {
   return g;
 }
 
-StVertex new_vertex(char *id, int data) {
+StVertex new_vertex(char *id, void *data) {
   StVertex v = malloc(sizeof(struct vertex));
   strcpy(v->id, id);
   v->data = data;
   return v; 
 }
 
-void grafo_insert_vertex(Grafo g, char *id, int data) {
+void grafo_insert_vertex(Grafo g, char *id, void *data) {
   StGrafo grafo = (StGrafo) g;
   StVertex v = new_vertex(id, data);
   hash_insert(grafo->vertices, id, v);
 }
 
-int grafo_get_vertex_data(Grafo g, char *id) {
+void *grafo_get_vertex_data(Grafo g, char *id) {
   StGrafo grafo = (StGrafo) g;
   StVertex v = hash_get(grafo->vertices, id);
   if (v == NULL) {
@@ -57,7 +57,7 @@ char *edge_join(char *from, char *to) {
   return s;
 }
 
-StEdge new_edge(char *from, char *to, int data) {
+StEdge new_edge(char *from, char *to, void *data) {
   StEdge e = malloc(sizeof(struct edge));
   strcpy(e->from, from);
   strcpy(e->to, to);
@@ -83,7 +83,7 @@ void *free_edge(StEdge e) {
   return data;
 }
 
-void grafo_insert_edge(Grafo g, char *from, char *to, int data) {
+void grafo_insert_edge(Grafo g, char *from, char *to, void *data) {
   StGrafo grafo = (StGrafo) g;
   StEdge e;
   StVertex vfrom, vto;
@@ -104,7 +104,7 @@ void grafo_insert_edge(Grafo g, char *from, char *to, int data) {
 
 }
 
-int grafo_get_edge_data(Grafo g, char *from, char *to) {
+void *grafo_get_edge_data(Grafo g, char *from, char *to) {
   StGrafo grafo = (StGrafo) g;
   StEdge e;
   char *key;
@@ -120,8 +120,8 @@ int grafo_get_edge_data(Grafo g, char *from, char *to) {
   return e->data;
 }
 
-int grafo_remove_edge(Grafo g, char *from, char *to) {
-  int data;
+void *grafo_remove_edge(Grafo g, char *from, char *to) {
+  void *data;
   StGrafo grafo = (StGrafo) g;
   StEdge e;
   char *key;
@@ -171,12 +171,12 @@ void grafo_adjacentes(Grafo g, char *id, Lista l) {
 
 }
 
-int edge_get_data(Edge e) {
+void *edge_get_data(Edge e) {
   StEdge edge = (StEdge) e;
   return edge->data;
 }
 
-int vertex_get_data(Vertex v) {
+void *vertex_get_data(Vertex v) {
   StVertex vertex = (StVertex) v;
   return vertex->data;
 }

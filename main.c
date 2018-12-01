@@ -5,6 +5,20 @@
 #include "Lista.h"
 #include "Grafo.h"
 
+typedef struct st_g {
+    int id;
+    int color;
+    int active;
+}* Reg;
+
+Reg new_reg(int id, int color, int active) {
+    Reg r = malloc(sizeof(struct st_g));
+    r->id = id;
+    r->color = color;
+    r->active = active;
+    return r;
+}
+
 int isDigit(char c) {
     return (c >= '0' && c <= '9');
 }
@@ -28,7 +42,10 @@ Grafo initialize_graph(int regs) {
 
     for (int i = 0; i < regs; i++) {
         sprintf(numbers, "%d", i);
-        grafo_insert_vertex(g, numbers, i);
+
+        Reg r = new_reg(i, i, 1);
+
+        grafo_insert_vertex(g, numbers, r);
     }
     return g;
 }
@@ -67,7 +84,12 @@ int main() {
 
             sscanf(token, "%d", &src);
 
-            grafo_insert_vertex(g, str_src, -1);
+            Reg r = grafo_get_vertex_data(g, str_src);
+
+            if (r == NULL) {
+                r = new_reg(src, -1, 1);
+                grafo_insert_vertex(g, str_src, r);
+            }
 
             token = strtok(NULL, " ");
             token = strtok(NULL, " ");
@@ -77,15 +99,18 @@ int main() {
                 
                 sscanf(token, "%d", &dest);
 
-                grafo_insert_edge(g, str_src, token, -1);
+                Reg r1 = grafo_get_vertex_data(g, str_src);
+
+                if (r1 == NULL) {
+                    r1 = new_reg(dest, -1, 1);
+                    grafo_insert_vertex(g, str_src, r);
+                }
+
+                grafo_insert_edge(g, str_src, token, NULL);
 
                 token = strtok(NULL, " ");
 
             }
-            
-        } else if (isDigit(token[0]) && find_less(token)) {
-
-        } else {
         }
 
 
