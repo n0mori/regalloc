@@ -1,19 +1,19 @@
 deps = Lista.o Hash.o Grafo.o Nick_string.o 
 
 regalloc: $(deps) main.o
-	gcc $(deps) main.c -o regalloc -lm
+	gcc -g $(deps) main.c -o regalloc -lm
 
 main.o: main.c
-	gcc -c main.c
+	gcc -g -c main.c
 
 Lista.o: Lista.c
-	gcc -c Lista.c
+	gcc -g -c Lista.c
 
 Hash.o: Hash.c
-	gcc -c Hash.c
+	gcc -g -c Hash.c
 
 Grafo.o: Grafo.c
-	gcc -c Grafo.c
+	gcc -g -c Grafo.c
 
 Nick_string.o: Nick_string.c
-	gcc -c Nick_string.c
+	gcc -g -c Nick_string.c

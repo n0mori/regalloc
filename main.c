@@ -38,17 +38,50 @@ int find_less(char *str) {
 
 Grafo initialize_graph(int regs) {
     Grafo g = new_grafo();
-    char numbers[100];
+    char numbers[100], other[100];
 
     for (int i = 0; i < regs; i++) {
         sprintf(numbers, "%d", i);
 
-        Reg r = new_reg(i, i, 1);
+        Reg r = grafo_get_vertex_data(g, numbers);
 
-        grafo_insert_vertex(g, numbers, r);
+        if (r == NULL) {
+            r = new_reg(i, i, 1);
+            grafo_insert_vertex(g, numbers, r);
+        }
+
+        for (int j = i; j < regs; j++) {
+            sprintf(other, "%d", j);
+
+            Reg r = grafo_get_vertex_data(g, other);
+
+            if (r == NULL) {
+                r = new_reg(j, j, 1);
+                grafo_insert_vertex(g, other, r);
+            }
+
+            grafo_insert_edge(g, numbers, other, NULL);
+            grafo_insert_edge(g, other, numbers, NULL);
+
+            other[0] = 0;
+        }
+
+        numbers[0] = 0;
     }
     return g;
 }
+
+int barran = 0;
+
+void prt() {
+    if (!barran) {
+        barran = 1;
+    } else {
+        printf("\n");
+    }
+}
+
+void process_graph(Grafo g, int regs, int graphnum);
 
 int main() {
     char buffer[10000];
@@ -66,12 +99,11 @@ int main() {
         if (!strcmp(token, "Graph")) {
 
             if (loaded) {
-                //execute coloring
+                process_graph(g, regs, gnum);
             }
 
             token = strtok(NULL, " ");
             sscanf(token, "%d:", &gnum);
-            //printf("Graph %d\n", gnum);
             loaded = 1;
         } else if (token[0] == 'K') {
             sscanf(token, "K=%d", &regs);
@@ -121,5 +153,205 @@ int main() {
         buffer[0] = 0;
     }
 
-    //execute the last one
+    process_graph(g, regs, gnum);
+}
+
+int count_neighbours(Vertex v, Lista l) {
+    Node n;
+    int count = 0;
+
+    for (n = get_first(l); n != NULL; n = get_next(l, n)) {
+        Vertex v = get(l, n);
+        Reg r = (Reg) vertex_get_data(v);
+
+        if (r->active) {
+            count++;
+        }
+
+    }
+
+    return count;
+}
+
+int count_all(Grafo g) {
+    Node n;
+    Lista l = grafo_all_vertex(g);
+    int count = 0;
+
+    for (n = get_first(l); n != NULL; n = get_next(l, n)) {
+        Vertex v = get(l, n);
+        Reg r = (Reg) vertex_get_data(v);
+
+        if (r->active) {
+            count++;
+        }
+
+    }
+
+    return count;
+}
+
+Vertex find_lonely(Grafo g, int regs) {
+    Node n;
+    Lista l = grafo_all_vertex(g);
+    Vertex m = NULL;
+
+    for (n = get_first(l); n != NULL; n = get_next(l, n)) {
+        Vertex v = get(l, n);
+        Reg r = (Reg) vertex_get_data(v);
+
+        if (r->active) {
+            Lista l = create_lista();
+            grafo_adjacentes(g, vertex_get_id(v), l);
+            int count = count_neighbours(v, l);
+            if (count <= regs) {
+                while (length_lista(l)) {
+                    remove_first(l);
+                }
+                m = v;
+                return m;
+            }
+            while (length_lista(l)) {
+                remove_first(l);
+            }
+        }
+    }
+
+    return m;
+}
+
+Vertex find_pot_spill(Grafo g, int regs) {
+    Node n;
+    Lista l = grafo_all_vertex(g);
+    int maior = -1;
+    Vertex m = NULL;
+
+    for (n = get_first(l); n != NULL; n = get_next(l, n)) {
+        Vertex v = get(l, n);
+        Reg r = (Reg) vertex_get_data(v);
+
+        if (r->active) {
+            Lista l = create_lista();
+            grafo_adjacentes(g, vertex_get_id(v), l);
+            int count = count_neighbours(v, l);
+
+            if (count > maior) {
+                maior = count;
+                m = v;
+            } else if (count == maior) {
+                Reg big = vertex_get_data(m);
+                if (big->id > r->id) {
+                    m = v;
+                }
+            }
+
+            while (length_lista(l) > 0) {
+                remove_first(l);
+            }
+        }
+    }
+
+    return m;
+}
+
+
+Lista simplify(Grafo g, int regs, int graphnum) {
+    Lista stack = create_lista();
+    Vertex m;
+
+    while (count_all(g)) {
+        m = find_lonely(g, regs);
+        Lista l = create_lista();
+
+        if (m == NULL) {
+            m = find_pot_spill(g, regs);
+        }
+
+        Reg r = vertex_get_data(m);
+        r->active = 0;
+
+        insert_first(stack, m);
+    }
+
+    return stack;
+
+}
+
+void assign(Grafo g, int regs, int graphnum, Lista stack) {
+    int colors[regs];
+    Reg r;
+    Vertex v;
+    Lista vizinhos = create_lista();
+
+    while (length_lista(stack)) {
+        v = remove_first(stack);
+        r = vertex_get_data(v);
+
+        grafo_adjacentes(g, vertex_get_id(v), vizinhos);
+
+        for (int i = 0; i < regs; i++) {
+            colors[i] = 0;
+        }
+
+        while (length_lista(vizinhos)) {
+            Vertex viz = remove_first(vizinhos);
+            Reg rz = vertex_get_data(viz);
+
+            if (rz->active) {
+                if (rz->color != -1) {
+                    colors[rz->color] = 1;
+                }
+            }
+        }
+
+        if (r->id >= regs) {
+            int full = 1;
+            int c;
+
+            for (c = 0; c < regs; c++) {
+                if (!colors[c]) {
+                    full = 0;
+                    break;
+                }
+            }
+
+            if (!full) {
+                r->color = c;
+                r->active = 1;
+            } else {
+                prt();
+                printf("Graph %d: SPILL", graphnum);
+                return;
+            }
+        } else {
+            if (!colors[r->color]) {
+                r->active = 1;
+            } else {
+                prt();
+                printf("Graph %d: SPILL", graphnum);
+                return;
+            }
+        }
+
+    }
+
+    prt();
+    printf("Graph %d: SUCCESS", graphnum);
+}
+
+void process_graph(Grafo g, int regs, int graphnum) {
+    Lista stk = simplify(g, regs, graphnum);
+
+    assign(g, regs, graphnum, stk);
+
+    Lista vertex = grafo_all_vertex(g);
+    Lista edges = grafo_all_edges(g);
+
+    while (length_lista(vertex)) {
+        free(remove_first(vertex));
+    }
+
+    while (length_lista(edges)) {
+        free(remove_first(edges));
+    }
 }
