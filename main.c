@@ -348,10 +348,10 @@ void process_graph(Grafo g, int regs, int graphnum) {
     Lista edges = grafo_all_edges(g);
 
     while (length_lista(vertex)) {
-        free(remove_first(vertex));
+        free(vertex_get_data(remove_first(vertex)));
     }
 
     while (length_lista(edges)) {
-        free(remove_first(edges));
+        free(edge_get_data(remove_first(edges)));
     }
 }
