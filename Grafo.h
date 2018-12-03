@@ -48,9 +48,12 @@ void *grafo_remove_edge(Grafo g, char *from, char *to);
 int  grafo_adjacente(Grafo g, char *from, char *to);
 void grafo_adjacentes(Grafo g, char *id, Lista l);
 void *edge_get_data(Edge e);
+char *edge_get_from(Edge e);
+char *edge_get_to(Edge e);
 void *vertex_get_data(Vertex v);
 char *vertex_get_id(Vertex v);
 Lista grafo_all_vertex(Grafo g);
 Lista grafo_all_edges(Grafo g);
+void grafo_free(Grafo g);
 
 #endif

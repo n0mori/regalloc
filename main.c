@@ -38,7 +38,7 @@ int find_less(char *str) {
 
 Grafo initialize_graph(int regs) {
     Grafo g = new_grafo();
-    char numbers[100], other[100];
+    char numbers[10], other[10];
 
     for (int i = 0; i < regs; i++) {
         sprintf(numbers, "%d", i);
@@ -188,6 +188,11 @@ int count_all(Grafo g) {
 
     }
 
+    while (length_lista(l)) {
+        remove_first(l);
+    }
+    free_lista(l);
+
     return count;
 }
 
@@ -201,21 +206,27 @@ Vertex find_lonely(Grafo g, int regs) {
         Reg r = (Reg) vertex_get_data(v);
 
         if (r->active) {
-            Lista l = create_lista();
-            grafo_adjacentes(g, vertex_get_id(v), l);
-            int count = count_neighbours(v, l);
+            Lista lx = create_lista();
+            grafo_adjacentes(g, vertex_get_id(v), lx);
+            int count = count_neighbours(v, lx);
             if (count <= regs) {
-                while (length_lista(l)) {
-                    remove_first(l);
+                while (length_lista(lx)) {
+                    remove_first(lx);
                 }
                 m = v;
                 return m;
             }
-            while (length_lista(l)) {
-                remove_first(l);
+            while (length_lista(lx)) {
+                remove_first(lx);
             }
+            free_lista(lx);
         }
     }
+
+    while (length_lista(l)) {
+        remove_first(l);
+    }
+    free_lista(l);
 
     return m;
 }
@@ -231,9 +242,9 @@ Vertex find_pot_spill(Grafo g, int regs) {
         Reg r = (Reg) vertex_get_data(v);
 
         if (r->active) {
-            Lista l = create_lista();
-            grafo_adjacentes(g, vertex_get_id(v), l);
-            int count = count_neighbours(v, l);
+            Lista lx = create_lista();
+            grafo_adjacentes(g, vertex_get_id(v), lx);
+            int count = count_neighbours(v, lx);
 
             if (count > maior) {
                 maior = count;
@@ -245,11 +256,17 @@ Vertex find_pot_spill(Grafo g, int regs) {
                 }
             }
 
-            while (length_lista(l) > 0) {
-                remove_first(l);
+            while (length_lista(lx) > 0) {
+                remove_first(lx);
             }
+            free_lista(lx);
         }
     }
+
+    while (length_lista(l)) {
+        remove_first(l);
+    }
+    free_lista(l);
 
     return m;
 }
@@ -261,7 +278,6 @@ Lista simplify(Grafo g, int regs, int graphnum) {
 
     while (count_all(g)) {
         m = find_lonely(g, regs);
-        Lista l = create_lista();
 
         if (m == NULL) {
             m = find_pot_spill(g, regs);
@@ -348,10 +364,17 @@ void process_graph(Grafo g, int regs, int graphnum) {
     Lista edges = grafo_all_edges(g);
 
     while (length_lista(vertex)) {
-        free(vertex_get_data(remove_first(vertex)));
+        Vertex v = remove_first(vertex);
+        free(vertex_get_data(v));
+        free(v);
     }
+    free_lista(vertex);
 
     while (length_lista(edges)) {
-        free(edge_get_data(remove_first(edges)));
+        Edge e = remove_first(edges);
+        grafo_remove_edge(g, edge_get_from(e), edge_get_to(e));
     }
+    free_lista(edges);
+
+    grafo_free(g);
 }

@@ -1,13 +1,13 @@
 #include "Grafo.h"
 
 typedef struct vertex {
-  char id[100];
+  char id[20];
   void *data;
 }* StVertex;
 
 typedef struct edge {
-  char from[100];
-  char to[100];
+  char from[20];
+  char to[20];
   void *data;
 }* StEdge;
 
@@ -22,8 +22,8 @@ int cmpt(void *a, void *b) {
 
 Grafo new_grafo() {
   StGrafo g = malloc(sizeof(struct grafo));
-  g->vertices = new_hash(98);
-  g->edges = new_hash(98);
+  g->vertices = new_hash(1);
+  g->edges = new_hash(1);
   return g;
 }
 
@@ -113,6 +113,8 @@ void *grafo_get_edge_data(Grafo g, char *from, char *to) {
 
   e = hash_get(grafo->edges, key);
 
+  free(key);
+
   if (e == NULL) {
     return NULL;
   }
@@ -128,7 +130,8 @@ void *grafo_remove_edge(Grafo g, char *from, char *to) {
 
   key = edge_join(from, to);
 
-  e = hash_get(grafo->edges, key);
+  e = hash_delete(grafo->edges, key);
+  free(key);
 
   if (e == NULL) {
     return NULL;
@@ -147,6 +150,8 @@ int grafo_adjacente(Grafo g, char *from, char *to) {
   key = edge_join(from, to);
 
   e = hash_get(grafo->edges, key);
+
+  free(key);
 
   if (e == NULL) {
     return 0;
@@ -198,4 +203,29 @@ Lista grafo_all_edges(Grafo g) {
   StGrafo grafo = (StGrafo) g;
   hash_filter(grafo->edges, list, cmpt, NULL);
   return list;
+}
+
+char *edge_get_from(Edge e) {
+  StEdge edge = (StEdge) e;
+
+  return edge->from;
+}
+
+char *edge_get_to(Edge e) {
+  StEdge edge = (StEdge) e;
+
+  return edge->to;
+}
+
+void donone(void *a) {
+
+}
+
+void grafo_free(Grafo g) {
+  StGrafo grafo = (StGrafo) g;
+
+  hash_delete_all(grafo->edges);
+  hash_delete_all(grafo->vertices);
+
+  free(g);
 }
