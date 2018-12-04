@@ -96,7 +96,9 @@ int main() {
 
         token = strtok(buffer, " ");
 
-        if (!strcmp(token, "Graph")) {
+        if (buffer[0] == 0) {
+            
+        } else if (!strcmp(token, "Graph")) {
 
             if (loaded) {
                 process_graph(g, regs, gnum);
@@ -336,7 +338,7 @@ void assign(Grafo g, int regs, int graphnum, Lista stack) {
                 r->active = 1;
             } else {
                 prt();
-                printf("Graph %d: SPILL", graphnum);
+                printf("Graph %d: SPILL\n", graphnum);
                 return;
             }
         } else {
@@ -344,7 +346,7 @@ void assign(Grafo g, int regs, int graphnum, Lista stack) {
                 r->active = 1;
             } else {
                 prt();
-                printf("Graph %d: SPILL", graphnum);
+                printf("Graph %d: SPILL\n", graphnum);
                 return;
             }
         }
@@ -352,7 +354,7 @@ void assign(Grafo g, int regs, int graphnum, Lista stack) {
     }
 
     prt();
-    printf("Graph %d: SUCCESS", graphnum);
+    printf("Graph %d: SUCCESS\n", graphnum);
 }
 
 void process_graph(Grafo g, int regs, int graphnum) {
